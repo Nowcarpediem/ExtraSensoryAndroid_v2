@@ -22,6 +22,7 @@ public class ESLabelStruct {
     public String[] _secondaryActivities = new String[0];
     public String[] _moods = new String[0];
 
+    public String _additionalInfo = "";
     public ESLabelStruct() {}
 
     public ESLabelStruct(ESLabelStruct other) {
@@ -31,6 +32,7 @@ public class ESLabelStruct {
         }
 
         this._mainActivity = other._mainActivity;
+        this._additionalInfo = other._additionalInfo;
         if (other._secondaryActivities != null) {
             this._secondaryActivities = Arrays.copyOf(other._secondaryActivities, other._secondaryActivities.length);
         }

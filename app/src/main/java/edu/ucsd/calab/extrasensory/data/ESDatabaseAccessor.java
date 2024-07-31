@@ -85,7 +85,9 @@ public class ESDatabaseAccessor {
     public enum ESLabelType {
         ES_LABEL_TYPE_MAIN,
         ES_LABEL_TYPE_SECONDARY,
-        ES_LABEL_TYPE_MOOD
+        ES_LABEL_TYPE_MOOD,
+
+        ES_LABEL_TYPE_INFO
     }
 
     private static ESDatabaseAccessor _theSingleAccessor;
@@ -112,7 +114,7 @@ public class ESDatabaseAccessor {
      */
     private class ESDBHelper extends SQLiteOpenHelper {
 
-        private static final int DATABASE_VERSION = 1;
+        private static final int DATABASE_VERSION = 2;
         private static final String SQL_CREATE_ES_ACTIVITY_TABLE =
                 "CREATE TABLE " + ESDatabaseContract.ESActivityEntry.TABLE_NAME +
                         " (" +
@@ -122,6 +124,7 @@ public class ESDatabaseAccessor {
                         ESDatabaseContract.ESActivityEntry.COLUMN_NAME_MAIN_ACTIVITY_USER_CORRECTION + " TEXT," +
                         ESDatabaseContract.ESActivityEntry.COLUMN_NAME_SECONDARY_ACTIVITIES_CSV + " TEXT," +
                         ESDatabaseContract.ESActivityEntry.COLUMN_NAME_MOODS_CSV + " TEXT," +
+                        ESDatabaseContract.ESActivityEntry.COLUMN_NAME_INFO_CSV + " TEXT," +
                         ESDatabaseContract.ESActivityEntry.COLUMN_NAME_PREDICTED_LABEL_NAMES_CSV + " TEXT," +
                         ESDatabaseContract.ESActivityEntry.COLUMN_NAME_PREDICTED_LABEL_PROBS_CSV + " TEXT," +
                         ESDatabaseContract.ESActivityEntry.COLUMN_NAME_LOCATION_REPRESENTATIVE_LAT_LONG_CSV + " TEXT," +
@@ -546,6 +549,7 @@ public class ESDatabaseAccessor {
         values.put(ESDatabaseContract.ESActivityEntry.COLUMN_NAME_MAIN_ACTIVITY_USER_CORRECTION,(String)null);
         values.put(ESDatabaseContract.ESActivityEntry.COLUMN_NAME_SECONDARY_ACTIVITIES_CSV,"");
         values.put(ESDatabaseContract.ESActivityEntry.COLUMN_NAME_MOODS_CSV,"");
+        values.put(ESDatabaseContract.ESActivityEntry.COLUMN_NAME_INFO_CSV,"");
         values.put(ESDatabaseContract.ESActivityEntry.COLUMN_NAME_PREDICTED_LABEL_NAMES_CSV,"");
         values.put(ESDatabaseContract.ESActivityEntry.COLUMN_NAME_PREDICTED_LABEL_PROBS_CSV,"");
         values.put(ESDatabaseContract.ESActivityEntry.COLUMN_NAME_LOCATION_REPRESENTATIVE_LAT_LONG_CSV,"");
@@ -582,6 +586,7 @@ public class ESDatabaseAccessor {
                 ESDatabaseContract.ESActivityEntry.COLUMN_NAME_MAIN_ACTIVITY_USER_CORRECTION,
                 ESDatabaseContract.ESActivityEntry.COLUMN_NAME_SECONDARY_ACTIVITIES_CSV,
                 ESDatabaseContract.ESActivityEntry.COLUMN_NAME_MOODS_CSV,
+                ESDatabaseContract.ESActivityEntry.COLUMN_NAME_INFO_CSV,
                 ESDatabaseContract.ESActivityEntry.COLUMN_NAME_PREDICTED_LABEL_NAMES_CSV,
                 ESDatabaseContract.ESActivityEntry.COLUMN_NAME_PREDICTED_LABEL_PROBS_CSV,
                 ESDatabaseContract.ESActivityEntry.COLUMN_NAME_LOCATION_REPRESENTATIVE_LAT_LONG_CSV,
@@ -628,6 +633,7 @@ public class ESDatabaseAccessor {
                 activity.get_mainActivityUserCorrection(),
                 activity.get_secondaryActivities(),
                 activity.get_moods(),
+                activity.get_info(),
                 predictedLabelNames,predictedLabelProbs,
                 locationLatLong,
                 activity.get_timestampOpenFeedbackForm(),
@@ -657,6 +663,7 @@ public class ESDatabaseAccessor {
      * @param mainActivityUserCorrection The user correction to assign to the activity
      * @param secondaryActivities The array of secondary activities to assign to the activity
      * @param moods The array of moods to assign to the activity
+     * @param info The array of moods to assign to the activity
      * @param timestampOpenFeedbackForm The timestamp of the time the user opened the feedback form for this activity (and actually sent feedback), or null in case this feedback did not involve the feedback form (e.g. confirmation-notification)
      * @param timestampPressSendButton The timestamp of the time the user pressed the "send feedback" button for this activity, or null in case this feedback did not involve the feedback form (e.g. confirmation-notification)
      * @param timestampNotification The timestamp of the time the notification showed, which eventually yielded this activity's update, or null if this feedback was not initiated by notification
@@ -664,11 +671,11 @@ public class ESDatabaseAccessor {
      */
     public synchronized void setESActivityValues(ESActivity activity,
                                                  ESActivity.ESLabelSource labelSource,String mainActivityUserCorrection,
-                                                 String[] secondaryActivities,String[] moods,
+                                                 String[] secondaryActivities,String[] moods, String info,
                                                  ESTimestamp timestampOpenFeedbackForm, ESTimestamp timestampPressSendButton,
                                                  ESTimestamp timestampNotification, ESTimestamp timestampUserRespondToNotification) {
         setESActivityUserCorrectedValuesAndPossiblySendFeedback(activity,labelSource,mainActivityUserCorrection,
-                secondaryActivities,moods,
+                secondaryActivities,moods, info,
                 timestampOpenFeedbackForm,timestampPressSendButton,
                 timestampNotification,timestampUserRespondToNotification,
                 true);
@@ -691,16 +698,17 @@ public class ESDatabaseAccessor {
      * @param timestampUserRespondToNotification The timestamp of the time the user responded to the notification by pressing an answer button, which yielded this activity's update, or null if this feedback was not initiated by notification
      * @param sendFeedback Should we send feedback update with this activity's labels?
      */
+
     public synchronized void setESActivityUserCorrectedValuesAndPossiblySendFeedback(ESActivity activity, ESActivity.ESLabelSource labelSource,
                                                                                      String mainActivityUserCorrection,
-                                                                                     String[] secondaryActivities, String[] moods,
+                                                                                     String[] secondaryActivities, String[] moods, String info,
                                                                                      ESTimestamp timestampOpenFeedbackForm, ESTimestamp timestampPressSendButton,
                                                                                      ESTimestamp timestampNotification, ESTimestamp timestampUserRespondToNotification,
                                                                                      boolean sendFeedback) {
 
         setESActivityValuesAndPossiblySendFeedback(activity,labelSource,
                 activity.get_mainActivityServerPrediction(),mainActivityUserCorrection,
-                secondaryActivities,moods,
+                secondaryActivities,moods,info,
                 activity.get_predictedLabelNames(),activity.get_predictedLabelProbs(),
                 activity.get_locationLatLong(),
                 timestampOpenFeedbackForm,timestampPressSendButton,
@@ -709,7 +717,7 @@ public class ESDatabaseAccessor {
 
         // Write the user-provided labels to file that will be accessible to other apps:
         if (ESSettings.saveUserLabelsFiles()) {
-            ESDataFilesAccessor.writeUserReportedLabels(activity.get_timestamp(),mainActivityUserCorrection,secondaryActivities,moods);
+            ESDataFilesAccessor.writeUserReportedLabels(activity.get_timestamp(),mainActivityUserCorrection,secondaryActivities,moods,info);
         }
         else {
             Log.d(LOG_TAG,"Requested to not save prediction files, so not saving.");
@@ -738,7 +746,7 @@ public class ESDatabaseAccessor {
      */
     private synchronized void setESActivityValuesAndPossiblySendFeedback(ESActivity activity,ESActivity.ESLabelSource labelSource,
                                                                         String mainActivityServerPrediction,String mainActivityUserCorrection,
-                                                                        String[] secondaryActivities,String[] moods,
+                                                                        String[] secondaryActivities,String[] moods,String info,
                                                                         String[] predictedLabelNames,double[] predictedLabelProbs,
                                                                         double[] locationLatLong,
                                                                         ESTimestamp timestampOpenFeedbackForm, ESTimestamp timestampPressSendButton,
@@ -758,6 +766,9 @@ public class ESDatabaseAccessor {
 
         String moodCSV = ESLabelStrings.makeCSV(moods);
         values.put(ESDatabaseContract.ESActivityEntry.COLUMN_NAME_MOODS_CSV,moodCSV);
+
+
+        values.put(ESDatabaseContract.ESActivityEntry.COLUMN_NAME_INFO_CSV,info);
 
         String predictedLabelNamesCSV = ESLabelStrings.makeCSV(predictedLabelNames);
         values.put(ESDatabaseContract.ESActivityEntry.COLUMN_NAME_PREDICTED_LABEL_NAMES_CSV,predictedLabelNamesCSV);
@@ -796,6 +807,7 @@ public class ESDatabaseAccessor {
         activity.set_mainActivityUserCorrection(mainActivityUserCorrection);
         activity.set_secondaryActivities(copyStringArray(secondaryActivities));
         activity.set_moods(copyStringArray(moods));
+        activity.set_info(info);
         activity.set_timestampOpenFeedbackForm(timestampOpenFeedbackForm);
         activity.set_timestampPressSendButton(timestampPressSendButton);
         activity.set_timestampNotification(timestampNotification);
@@ -865,6 +877,7 @@ public class ESDatabaseAccessor {
                 ESDatabaseContract.ESActivityEntry.COLUMN_NAME_MAIN_ACTIVITY_USER_CORRECTION,
                 ESDatabaseContract.ESActivityEntry.COLUMN_NAME_SECONDARY_ACTIVITIES_CSV,
                 ESDatabaseContract.ESActivityEntry.COLUMN_NAME_MOODS_CSV,
+              ESDatabaseContract.ESActivityEntry.COLUMN_NAME_INFO_CSV,
                 ESDatabaseContract.ESActivityEntry.COLUMN_NAME_PREDICTED_LABEL_NAMES_CSV,
                 ESDatabaseContract.ESActivityEntry.COLUMN_NAME_PREDICTED_LABEL_PROBS_CSV,
                 ESDatabaseContract.ESActivityEntry.COLUMN_NAME_LOCATION_REPRESENTATIVE_LAT_LONG_CSV,
@@ -924,6 +937,8 @@ public class ESDatabaseAccessor {
         String[] moods = parsePossiblyEmptyCSV(moodCSV);
         //String[] moods = (moodCSV==null || moodCSV.isEmpty()) ? new String[]{} : parseCSV(moodCSV);
 
+       String info = cursor.getString(cursor.getColumnIndexOrThrow(ESDatabaseContract.ESActivityEntry.COLUMN_NAME_INFO_CSV));
+
         String predictedLabelNamesCSV = cursor.getString(cursor.getColumnIndexOrThrow(ESDatabaseContract.ESActivityEntry.COLUMN_NAME_PREDICTED_LABEL_NAMES_CSV));
         String[] predictedLabelNames = parsePossiblyEmptyCSV(predictedLabelNamesCSV);
 
@@ -945,7 +960,7 @@ public class ESDatabaseAccessor {
         int timeUserResToNotif = cursor.getInt(cursor.getColumnIndexOrThrow(ESDatabaseContract.ESActivityEntry.COLUMN_NAME_TIMESTAMP_USER_RESPOND_TO_NOTIFICATION));
         ESTimestamp timestampUserResToNotif = (timeUserResToNotif <= 0) ? null : new ESTimestamp(timeUserResToNotif);
 
-        return new ESActivity(timestamp,labelSource,serverMain,userMain,secondaryActivities,moods,
+        return new ESActivity(timestamp,labelSource,serverMain,userMain,secondaryActivities,moods,info,
                 predictedLabelNames,predictedLabelProbs,locationLatLong,
                 timestampOpenFeedbackForm,timestampPressSendButton,
                 timestampNotification,timestampUserResToNotif);
@@ -1040,6 +1055,17 @@ public class ESDatabaseAccessor {
                             increaseLabelCount(countsMap,mood);
                         }
                     }
+                }
+
+            case ES_LABEL_TYPE_INFO:
+                for (ESActivity activity : activities) {
+                    String info = activity.get_info();
+                    if (info != null) {
+
+                            increaseLabelCount(countsMap,info);
+
+                    }
+
                 }
                 break;
         }

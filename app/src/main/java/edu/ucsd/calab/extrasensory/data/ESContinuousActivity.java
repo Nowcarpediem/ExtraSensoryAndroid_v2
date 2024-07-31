@@ -248,6 +248,21 @@ public class ESContinuousActivity {
         return null;
     }
 
+    public String getInfo() {
+        if (this.isEmpty()) {
+            return null;
+        }
+
+        for (ESActivity activity : _minuteActivities) {
+            // Search for activity with user-provided labels:
+            if (activity.hasUserProvidedLabels()) {
+                return activity.get_info();
+            }
+        }
+
+        return null;
+    }
+
     /**
      *
      * @return
@@ -359,7 +374,7 @@ public class ESContinuousActivity {
                 ", main activity prediction: " + getMainActivityServerPrediction() +
                 ",main activity correction: " + getMainActivityUserCorrection() +
                 ",secondary: {" + getSecondaryActivities() + "}" +
-                ",mood: {" + getMoods() + "}>";
+                ",mood: {" + getMoods() + "}" + ",additional info: {" + getInfo() + "}>";
     }
     // Static interface:
 

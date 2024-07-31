@@ -159,9 +159,10 @@ public class ESDataFilesAccessor {
      * @param mainActivityUserCorrection - the main-activity labels, corrected by the user
      * @param secondaryActivities - the secondary activities reported by the user
      * @param moods - the mood labels provided by the user
+     * @param info - the mood labels provided by the user
      * @return Did we succeed writing the file
      */
-    public static boolean writeUserReportedLabels(ESTimestamp timestamp,String mainActivityUserCorrection,String[] secondaryActivities,String[] moods) {
+    public static boolean writeUserReportedLabels(ESTimestamp timestamp,String mainActivityUserCorrection,String[] secondaryActivities,String[] moods, String info) {
         final File instanceLabelsFile;
         try {
             instanceLabelsFile = new File(getLabelFilesDir(),timestamp.toString() + ".user_reported_labels.json");
@@ -184,6 +185,11 @@ public class ESDataFilesAccessor {
             for (String moodLabel : moods) {
                 userLabelsSet.add(moodLabel);
             }
+        }
+        if (info != null) {
+
+                userLabelsSet.add(info);
+
         }
 
         // Construct the JSON structure:

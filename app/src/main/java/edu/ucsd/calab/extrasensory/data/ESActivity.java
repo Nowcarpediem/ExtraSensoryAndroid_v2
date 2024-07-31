@@ -74,6 +74,8 @@ public class ESActivity {
     private String _mainActivityUserCorrection;
     private String[] _secondaryActivities;
     private String[] _moods;
+
+    private String _additionalInfo;
     private String[] _predictedLabelNames;
     private double[] _predictedLabelProbs;
     private double[] _locationLatLong;
@@ -90,6 +92,7 @@ public class ESActivity {
         _mainActivityUserCorrection = null;
         _secondaryActivities = null;
         _moods = null;
+        _additionalInfo = null;
         _predictedLabelNames = null;
         _predictedLabelProbs = null;
         _locationLatLong = null;
@@ -101,7 +104,7 @@ public class ESActivity {
 
     ESActivity(ESTimestamp timestamp, ESLabelSource labelSource,
                String mainActivityServerPrediction, String mainActivityUserCorrection,
-               String[] secondaryActivities, String[] moods,
+               String[] secondaryActivities, String[] moods, String info,
                String[] predictedLabelNames, double[] predictedLabelProbs,
                double[] locationLatLong,
                ESTimestamp timestampOpenFeedbackForm, ESTimestamp timestampPressSendButton,
@@ -112,6 +115,7 @@ public class ESActivity {
         _mainActivityUserCorrection = mainActivityUserCorrection;
         _secondaryActivities = secondaryActivities;
         _moods = moods;
+        _additionalInfo = info;
         if ((predictedLabelNames==null && predictedLabelProbs!=null) || (predictedLabelNames!=null && predictedLabelProbs==null)) {
             Log.w(LOG_TAG, "Trying to construct ESActivity with one of predictedLabelNames and predictedLabelProbs being null. Setting them both to empty.");
             _predictedLabelNames = new String[]{};
@@ -165,6 +169,7 @@ public class ESActivity {
         return _moods;
     }
 
+    public String get_info() { return _additionalInfo; }
     public String[] get_predictedLabelNames() { return _predictedLabelNames; }
 
     public double[] get_predictedLabelProbs() { return _predictedLabelProbs; }
@@ -218,6 +223,7 @@ public class ESActivity {
                 ",main activity correction: " + _mainActivityUserCorrection +
                 ",secondary: {" + _secondaryActivities + "}" +
                 ",mood: {" + _moods + "}" +
+                ",additional info: {" + _additionalInfo + "}" +
                 ",predicted label names: {" + _predictedLabelNames + "}" +
                 ",predicted label probs: {" + _predictedLabelProbs + "}" +
                 ",location lat long: (" + _locationLatLong + ")" +
@@ -257,6 +263,8 @@ public class ESActivity {
     void set_moods(String[] _moods) {
         this._moods = _moods;
     }
+
+    void set_info(String _additionalInfo) { this._additionalInfo = _additionalInfo; }
 
     void set_timestampOpenFeedbackForm(ESTimestamp timestampOpenFeedbackForm) { this._timestampOpenFeedbackForm = timestampOpenFeedbackForm; }
 

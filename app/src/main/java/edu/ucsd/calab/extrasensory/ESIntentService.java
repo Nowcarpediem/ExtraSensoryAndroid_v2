@@ -81,6 +81,7 @@ public class ESIntentService extends IntentService {
                         newActivity,labelSource,
                         predeterminedLabels._mainActivity,predeterminedLabels._secondaryActivities,
                         predeterminedLabels._moods,
+                        predeterminedLabels._additionalInfo,
                         ESApplication._predeterminedLabels.get_timestampOpenFeedbackForm(),
                         ESApplication._predeterminedLabels.get_timestampPressSendButton(),
                         ESApplication._predeterminedLabels.get_timestampNotification(),

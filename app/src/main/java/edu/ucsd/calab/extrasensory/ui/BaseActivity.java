@@ -217,6 +217,7 @@ public class BaseActivity extends ActionBarActivity {
                             latestVerifiedActivity.get_mainActivityUserCorrection(),
                             latestVerifiedActivity.get_secondaryActivities(),
                             latestVerifiedActivity.get_moods(),
+                            latestVerifiedActivity.get_info(),
                             null,null,
                             timestampNotification,timestampUserRespondToNotification);
                 }

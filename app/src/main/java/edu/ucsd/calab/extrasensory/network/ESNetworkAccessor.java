@@ -91,7 +91,7 @@ public class ESNetworkAccessor {
     private static final String SERVER_HOSTNAME = readServerHostname();
     private static final String HTTP_PREFIX = "http://";
     private static final String HTTPS_PREFIX = "https://";
-    private static final String HTTP_PORT = "80";
+    private static final String HTTP_PORT = "8080"; //
     private static final String HTTPS_PORT = "443";
     private static final String SERVER_HTTP_API_PREFIX = HTTP_PREFIX + SERVER_HOSTNAME + ":" + HTTP_PORT + "/extrasensory/";
     private static final String SERVER_HTTPS_API_PREFIX = HTTPS_PREFIX + SERVER_HOSTNAME + ":" + HTTPS_PORT + "/extrasensory/";
@@ -792,6 +792,7 @@ public class ESNetworkAccessor {
             String mainUserStr = "corrected_activity=" + activity.get_mainActivityUserCorrection();
             String secondaryStr = "secondary_activities=" + ESLabelStrings.makeCSVForNetwork(activity.get_secondaryActivities());
             String moodStr = "moods=" + ESLabelStrings.makeCSVForNetwork(activity.get_moods());
+            String infoStr = "additional_info=" + activity.get_info();
 
             String apiParams = uuidStr + "&" +
                     timestampStr + "&" +
@@ -799,7 +800,7 @@ public class ESNetworkAccessor {
                     mainPredictionStr + "&" +
                     mainUserStr + "&" +
                     secondaryStr + "&" +
-                    moodStr;
+                    moodStr + "&" + infoStr + "&";
 
             // Adding more information (including about interaction of the user with the app):
             String sendTimeStr = "timestampOfSendingFeedback=" + new ESTimestamp().toString();

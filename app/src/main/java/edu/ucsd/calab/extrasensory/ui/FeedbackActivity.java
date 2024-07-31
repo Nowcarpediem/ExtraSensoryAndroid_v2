@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.AdapterView;
 import android.widget.SimpleAdapter;
@@ -31,6 +32,8 @@ import edu.ucsd.calab.extrasensory.data.ESDatabaseAccessor;
 import edu.ucsd.calab.extrasensory.data.ESLabelStruct;
 import edu.ucsd.calab.extrasensory.data.ESTimestamp;
 
+import static edu.ucsd.calab.extrasensory.R.id.additionalInfoInput;
+import static edu.ucsd.calab.extrasensory.R.id.sendfeedback;
 import static edu.ucsd.calab.extrasensory.data.ESDatabaseAccessor.getESDatabaseAccessor;
 
 /**
@@ -66,7 +69,7 @@ public class FeedbackActivity extends BaseActivity {
     private static final int ROW_MOOD = 2;
     private static final int ROW_VALID = 3;
 
-    private static final String[] ROW_HEADERS = new String[] { "Main Activity", "Secondary Activities", "Mood", "Valid for" };
+    private static final String[] ROW_HEADERS = new String[] { "Main Activity", "Secondary Activities", "Mood", "Valid for"};
 
     private ESLabelStruct _labelStruct = new ESLabelStruct();
     private String _validFor = SelectionFromListActivity.getValidForValues()[0];
@@ -75,6 +78,8 @@ public class FeedbackActivity extends BaseActivity {
     private boolean _presentServerGuesses;
 
     private ESTimestamp _timestampOpenFeedbackForm = null;
+
+
 
     /**
      * This parameter type is to be used to transfer parameters to the feedback view,
@@ -143,6 +148,7 @@ public class FeedbackActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_feedback);
+
         Log.d(LOG_TAG,"activity being created");
 
         _timestampOpenFeedbackForm = new ESTimestamp();
@@ -166,6 +172,8 @@ public class FeedbackActivity extends BaseActivity {
             _labelStruct._mainActivity = _parameters._continuousActivityToEdit.mostUpToDateMainActivity();
             _labelStruct._secondaryActivities = _parameters._continuousActivityToEdit.getSecondaryActivities();
             _labelStruct._moods = _parameters._continuousActivityToEdit.getMoods();
+            _labelStruct._additionalInfo = _parameters._continuousActivityToEdit.getInfo();
+
 
             Date start = _parameters._continuousActivityToEdit.getStartTimestamp().getDateOfTimestamp();
             Date end = _parameters._continuousActivityToEdit.getEndTimestamp().getDateOfTimestamp();
@@ -267,6 +275,8 @@ public class FeedbackActivity extends BaseActivity {
         validDatum.put(KEY_ROW_DETAIL, _parameters._feedbackType == FEEDBACK_TYPE_ACTIVE ? _validFor : "");
         data.add(validDatum);
 
+
+
         SimpleAdapter adapter = new SimpleAdapter(this, data,
                 android.R.layout.simple_list_item_2,
                 new String[] {KEY_ROW_HEADER, KEY_ROW_DETAIL},
@@ -290,6 +300,9 @@ public class FeedbackActivity extends BaseActivity {
                 String[] frequentLabels;
 
                 Intent intent = null;
+                     
+                     
+
                 switch (position) {
                     case ROW_MAIN:
                         intent = new Intent(ESApplication.getTheAppContext(), SelectionFromListActivity.class);
@@ -339,7 +352,7 @@ public class FeedbackActivity extends BaseActivity {
 
     public void addListenerOnButton() {
         final Context context = this;
-        button = (Button) findViewById(R.id.sendfeedback);
+        button = (Button) findViewById(sendfeedback);
         button.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -347,11 +360,14 @@ public class FeedbackActivity extends BaseActivity {
                 ESTimestamp timestampPressSendButton = new ESTimestamp();
                 boolean initiatedByNotification = getIntent().hasExtra(KEY_INITIATED_BY_NOTIFICATION);
 
+                EditText infoInput = (android.widget.EditText) findViewById(additionalInfoInput);
+                _labelStruct._additionalInfo = infoInput.getText().toString();
                 //user must enter some labels before submitting active feedback
                 if (_parameters._feedbackType == FEEDBACK_TYPE_ACTIVE) {
                     boolean emptyMain = (_labelStruct._mainActivity == null) || (_labelStruct._mainActivity.equals(getString(R.string.not_sure_dummy_label)));
                     boolean emptySec = (_labelStruct._secondaryActivities == null) || (_labelStruct._secondaryActivities.length <= 0);
                     boolean emptyMood = (_labelStruct._moods == null) || (_labelStruct._moods.length <= 0);
+
                     if (emptyMain && emptySec && emptyMood) {
                         // custom dialog
                         final Dialog dialog = new Dialog(context);
@@ -399,6 +415,7 @@ public class FeedbackActivity extends BaseActivity {
                                 _labelStruct._mainActivity,
                                 _labelStruct._secondaryActivities,
                                 _labelStruct._moods,
+                                _labelStruct._additionalInfo,
                                 _timestampOpenFeedbackForm,timestampPressSendButton,
                                 _parameters._timestampNotification,_parameters._timestampUserRespondToNotification);
                     }

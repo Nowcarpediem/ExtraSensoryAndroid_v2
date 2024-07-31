@@ -31,6 +31,8 @@ public class ESLabelStrings {
     private static String[] _mainActivities = null;
     private static String[] _secondaryActivities = null;
     private static String[] _moods = null;
+
+    private static String _info = null;
     private static TreeMap<String,String[]> _secondaryActivitiesPerSubject = null;
     private static HashMap<String,Integer> _mainActivity2color = null;
 
@@ -99,6 +101,10 @@ public class ESLabelStrings {
         }
 
         return _moods;
+    }
+    public static String getInfo() {
+
+        return _info;
     }
 
 
